@@ -45,3 +45,4 @@ bin/
 .DS_Store
 /gradle/wrapper/gradle-wrapper.jar
 /.idea/
+/imgui.ini
