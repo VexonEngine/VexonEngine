@@ -2,8 +2,6 @@ package org.vexon.editor
 
 import imgui.ImGui
 import imgui.ImGuiIO
-import imgui.ImVec2
-import imgui.ImVec4
 import imgui.flag.ImGuiCol
 import imgui.flag.ImGuiConfigFlags
 import imgui.flag.ImGuiStyleVar
@@ -11,29 +9,24 @@ import imgui.flag.ImGuiWindowFlags
 import imgui.gl3.ImGuiImplGl3
 import imgui.glfw.ImGuiImplGlfw
 import imgui.type.ImBoolean
-import org.lwjgl.glfw.GLFW.GLFW_CONTEXT_VERSION_MAJOR
-import org.lwjgl.glfw.GLFW.GLFW_CONTEXT_VERSION_MINOR
-import org.lwjgl.glfw.GLFW.GLFW_OPENGL_CORE_PROFILE
-import org.lwjgl.glfw.GLFW.GLFW_OPENGL_FORWARD_COMPAT
-import org.lwjgl.glfw.GLFW.GLFW_OPENGL_PROFILE
 import org.lwjgl.glfw.GLFW.glfwCreateWindow
 import org.lwjgl.glfw.GLFW.glfwInit
 import org.lwjgl.glfw.GLFW.glfwMakeContextCurrent
 import org.lwjgl.glfw.GLFW.glfwPollEvents
 import org.lwjgl.glfw.GLFW.glfwSwapBuffers
-import org.lwjgl.glfw.GLFW.glfwWindowHint
 import org.lwjgl.glfw.GLFW.glfwWindowShouldClose
 import org.lwjgl.opengl.GL
 import org.lwjgl.opengl.GL11.GL_COLOR_BUFFER_BIT
-import org.lwjgl.opengl.GL11.GL_TRUE
+import org.lwjgl.opengl.GL11.GL_DEPTH_TEST
 import org.lwjgl.opengl.GL11.glClear
 import org.lwjgl.opengl.GL11.glClearColor
+import org.lwjgl.opengl.GL11.glEnable
 import org.lwjgl.system.MemoryUtil.NULL
 
-class ManagedWindow(name: String, setupCall: ContentDrawable.() -> Unit) : ContentDrawable(setupCall) {
-    val windowHandle: Long
+class ManagedWindow(val name: String, val setupCall: ContentDrawable.() -> Unit) : ContentDrawable(setupCall) {
+    var windowHandle: Long? = null
 
-    init {
+    fun start() {
         val width = 1280
         val height = 720
 
@@ -41,49 +34,42 @@ class ManagedWindow(name: String, setupCall: ContentDrawable.() -> Unit) : Conte
             throw IllegalStateException("Unable to initialize GLFW")
         }
 
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3)
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2)
-        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE)
-        glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE)
-
         windowHandle = glfwCreateWindow(width, height, name, NULL, NULL)
         if (windowHandle == NULL) {
             throw RuntimeException("Failed to create the GLFW window")
         }
 
-        glfwMakeContextCurrent(windowHandle)
+        glfwMakeContextCurrent(windowHandle!!)
         GL.createCapabilities()
-    }
 
 
-    fun run() {
         val window = ImGuiImplGlfw()
         val gl3 = ImGuiImplGl3()
 
         ImGui.createContext()
         val io = ImGui.getIO()
 
-        window.init(windowHandle, true)
+        window.init(windowHandle!!, true)
         gl3.init("#version 130")
 
         setupStyle()
 
         io.configFlags = io.configFlags or ImGuiConfigFlags.DockingEnable
 
-        while (!glfwWindowShouldClose(windowHandle)) {
+
+        while (!glfwWindowShouldClose(windowHandle!!)) {
             glfwPollEvents()
             window.newFrame()
             ImGui.newFrame()
 
             setupDockSpace(io)
-
             draw()
 
             ImGui.render()
 
             gl3.renderDrawData(ImGui.getDrawData())
 
-            glfwSwapBuffers(windowHandle)
+            glfwSwapBuffers(windowHandle!!)
             glClearColor(30 / 255f, 30 / 255f, 46 / 255f, 1f)
             glClear(GL_COLOR_BUFFER_BIT)
         }
