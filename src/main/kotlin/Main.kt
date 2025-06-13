@@ -1,6 +1,5 @@
 package org.vexon
 
-import org.lwjgl.opengl.ARBFramebufferObject.*
 import org.lwjgl.opengl.GL11.*
 import org.vexon.editor.ManagedWindow
 import org.vexon.editor.frame.component.Text
@@ -8,8 +7,17 @@ import org.vexon.editor.frame.component.button
 import org.vexon.editor.frame.component.glBufferImage
 import org.vexon.editor.frame.component.text
 import org.vexon.editor.frame.frame
+import org.vexon.renderer.obj.ObjFile
+import org.vexon.renderer.obj.ObjFileRenderer
+import java.awt.Color
+import kotlin.math.sin
+import kotlin.math.tan
+
+private var loadedObjFile: ObjFile? = null
 
 fun main() {
+    loadedObjFile = ObjFile("src/main/resources/tree.obj")
+
     val mainWindow = ManagedWindow("Vexon") {
         frame("Inspector") {
             val t1 = text("This is an ImGui window in Kotlin.")
@@ -24,6 +32,13 @@ fun main() {
             }
         }
         frame("Debugger") {
+            val t1 = text("This is an ImGui window in Kotlin.")
+            button("Click Me!") {
+                text = "Thanks!"
+                t1.text = "You Clicked my neighbor!"
+            }
+        }
+        frame("Project Settings") {
             val t1 = text("This is an ImGui window in Kotlin.")
             button("Click Me!") {
                 text = "Thanks!"
@@ -57,63 +72,32 @@ fun renderToFramebuffer(width: Int, height: Int) {
 
     glMatrixMode(GL_MODELVIEW)
     glLoadIdentity()
-    glTranslatef(0f, 0f, -3f) // Move the cube into view
+    glTranslatef(0f, 0f, -3f) // Move the model into view
 
-    // Animate rotation based on time
-    val time = System.nanoTime() / 1_000_000_000.0
-    val angle = (time * 45.0) % 360.0 // 45 degrees per second
-    glRotated(angle, 1.0, 1.0, 0.0) // Rotate for visibility
+    val time = System.nanoTime() / 500_000_000.0
+    val bounce = sin(time * 2.0f) * 0.2f // Bounce amplitude 0.5
 
-    glBegin(GL_QUADS)
+    if (loadedObjFile != null) {
+        val rotX = 0f
+        val rotY = 0f
+        val rotZ = 180f
 
-    // Front face (red)
-    glColor3f(1f, 0f, 0f)
-    glVertex3f(-0.5f, -0.5f, -0.5f)
-    glVertex3f( 0.5f, -0.5f, -0.5f)
-    glVertex3f( 0.5f,  0.5f, -0.5f)
-    glVertex3f(-0.5f,  0.5f, -0.5f)
+        val posX = 0f
+        val posY = bounce.toFloat()
+        val posZ = 0f
 
-    // Back face (green)
-    glColor3f(0f, 1f, 0f)
-    glVertex3f(-0.5f, -0.5f, 0.5f)
-    glVertex3f( 0.5f, -0.5f, 0.5f)
-    glVertex3f( 0.5f,  0.5f, 0.5f)
-    glVertex3f(-0.5f,  0.5f, 0.5f)
-
-    // Bottom face (blue)
-    glColor3f(0f, 0f, 1f)
-    glVertex3f(-0.5f, -0.5f, -0.5f)
-    glVertex3f( 0.5f, -0.5f, -0.5f)
-    glVertex3f( 0.5f, -0.5f,  0.5f)
-    glVertex3f(-0.5f, -0.5f,  0.5f)
-
-    // Top face (yellow)
-    glColor3f(1f, 1f, 0f)
-    glVertex3f(-0.5f, 0.5f, -0.5f)
-    glVertex3f( 0.5f, 0.5f, -0.5f)
-    glVertex3f( 0.5f, 0.5f,  0.5f)
-    glVertex3f(-0.5f, 0.5f,  0.5f)
-
-    // Left face (magenta)
-    glColor3f(1f, 0f, 1f)
-    glVertex3f(-0.5f, -0.5f, -0.5f)
-    glVertex3f(-0.5f,  0.5f, -0.5f)
-    glVertex3f(-0.5f,  0.5f,  0.5f)
-    glVertex3f(-0.5f, -0.5f,  0.5f)
-
-    // Right face (cyan)
-    glColor3f(0f, 1f, 1f)
-    glVertex3f(0.5f, -0.5f, -0.5f)
-    glVertex3f(0.5f,  0.5f, -0.5f)
-    glVertex3f(0.5f,  0.5f,  0.5f)
-    glVertex3f(0.5f, -0.5f,  0.5f)
-
-    glEnd()
+        ObjFileRenderer.renderObjWithTransform(
+            objFile = loadedObjFile!!,
+            scale = 0.1f,
+            rotationAngles = Triple(rotX, rotY, rotZ),
+            position = Triple(posX, posY, posZ),
+            color = Triple(0.8f, 0.1f, 1f)
+        )
+    }
 }
 
-// Helper for gluPerspective using classic math
 fun gluPerspective(fovY: Float, aspect: Float, zNear: Float, zFar: Float) {
-    val fH = kotlin.math.tan(Math.toRadians((fovY / 2).toDouble())).toFloat() * zNear
+    val fH = tan(Math.toRadians((fovY / 2).toDouble())).toFloat() * zNear
     val fW = fH * aspect
     glFrustum(-fW.toDouble(), fW.toDouble(), -fH.toDouble(), fH.toDouble(), zNear.toDouble(), zFar.toDouble())
 }

@@ -140,8 +140,8 @@ class ManagedWindow(val name: String, val setupCall: ContentDrawable.() -> Unit)
         colors[ImGuiCol.Tab]                  = rgba(36, 39, 58)
         colors[ImGuiCol.TabHovered]           = rgba(250, 132, 85)
         colors[ImGuiCol.TabActive]            = rgba(230, 100, 50)
-        colors[ImGuiCol.TabUnfocused]         = rgba(30, 32, 48)
-        colors[ImGuiCol.TabUnfocusedActive]   = rgba(44, 47, 65)
+        colors[ImGuiCol.TabUnfocused]         = rgba(44, 47, 65)
+        colors[ImGuiCol.TabUnfocusedActive]   = rgba(30, 32, 48)
 
 
         style.colors = colors

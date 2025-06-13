@@ -31,6 +31,8 @@ import org.vexon.editor.Drawable
 
 class GLBufferImage(var texIdProvider: (Float, Float, Framebuffer) -> Unit) : Drawable() {
     var fb: Framebuffer? = null
+    var previousWidth = 0f
+    var previousHeight = 0f
 
     override fun draw() {
         val width = ImGui.getContentRegionAvailX()
@@ -40,18 +42,24 @@ class GLBufferImage(var texIdProvider: (Float, Float, Framebuffer) -> Unit) : Dr
             fb = createFramebuffer()
         }
 
-        fb!!.update(width.toInt(), height.toInt())
+        if (width != previousWidth || height != previousHeight) {
+            fb!!.update(width.toInt(), height.toInt())
+        }
 
         glBindFramebuffer(GL_FRAMEBUFFER, fb!!.fbo)
         texIdProvider(width, height, fb!!)
         glBindFramebuffer(GL_FRAMEBUFFER, 0)
 
         ImGui.image(fb!!.texId, width, height)
+
+        previousWidth = width
+        previousHeight = height
     }
 }
 
 class Framebuffer(val fbo: Int, var texId: Int, val depthBuffer: Int) {
     fun update(width: Int, height: Int) {
+        if (width <= 0 || height <= 0) return
         glBindTexture(GL_TEXTURE_2D, texId)
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0)
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
