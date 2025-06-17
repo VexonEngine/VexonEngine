@@ -1,4 +1,6 @@
-package org.vexon.renderer.obj
+package org.vexon.renderer.dim3d.obj
+
+import java.io.File
 
 class ObjFile(path: String) {
     private val vertices: MutableList<Float> = mutableListOf()
@@ -12,7 +14,7 @@ class ObjFile(path: String) {
     }
 
     private fun loadObjFile(path: String) {
-        val file = java.io.File(path)
+        val file = File(path)
         if (!file.exists()) {
             println("Error: OBJ file not found at path: $path")
             return

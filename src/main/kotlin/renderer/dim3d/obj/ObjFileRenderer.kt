@@ -1,4 +1,4 @@
-package org.vexon.renderer.obj
+package org.vexon.renderer.dim3d.obj
 
 import org.lwjgl.opengl.GL11.*
 

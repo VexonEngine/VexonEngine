@@ -7,16 +7,16 @@ import org.vexon.editor.frame.component.button
 import org.vexon.editor.frame.component.glBufferImage
 import org.vexon.editor.frame.component.text
 import org.vexon.editor.frame.frame
-import org.vexon.renderer.obj.ObjFile
-import org.vexon.renderer.obj.ObjFileRenderer
-import java.awt.Color
+import org.vexon.renderer.dim3d.obj.ObjFile
+import org.vexon.renderer.dim3d.obj.ObjFileRenderer
+import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.math.tan
 
 private var loadedObjFile: ObjFile? = null
 
 fun main() {
-    loadedObjFile = ObjFile("src/main/resources/tree.obj")
+    loadedObjFile = ObjFile("src/main/resources/monkey.obj")
 
     val mainWindow = ManagedWindow("Vexon") {
         frame("Inspector") {
@@ -75,7 +75,8 @@ fun renderToFramebuffer(width: Int, height: Int) {
     glTranslatef(0f, 0f, -3f) // Move the model into view
 
     val time = System.nanoTime() / 500_000_000.0
-    val bounce = sin(time * 2.0f) * 0.2f // Bounce amplitude 0.5
+    val bounce = sin(2*cos(time) * 2.0f) * 0.7f // Bounce amplitude 0.5
+    val rotation = time * 30.0f // Rotate at 50 degrees per second
 
     if (loadedObjFile != null) {
         val rotX = 0f
@@ -88,10 +89,10 @@ fun renderToFramebuffer(width: Int, height: Int) {
 
         ObjFileRenderer.renderObjWithTransform(
             objFile = loadedObjFile!!,
-            scale = 0.1f,
-            rotationAngles = Triple(rotX, rotY, rotZ),
+            scale = (bounce.toFloat() * 1.5f),
+            rotationAngles = Triple(rotation.toFloat(), rotation.toFloat(), rotZ),
             position = Triple(posX, posY, posZ),
-            color = Triple(0.8f, 0.1f, 1f)
+            color = Triple((rotation.toFloat()/100)%1, 1 - (rotation.toFloat()/100)%1, (rotation.toFloat()*rotation.toFloat()/10)%1)
         )
     }
 }
